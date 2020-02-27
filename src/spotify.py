@@ -1,5 +1,6 @@
 import requests
-from classes import Track, Artist, Album
+from classes import Track, Artist, Album, BaconArtist
+from queue import Queue
 
 ARTISTS = set()
 OAUTH_TOKEN = open("key.txt").readline()
@@ -63,6 +64,8 @@ def get_artist_album_ids(artist_id: str) -> [str]:
     try:
         aos = requests.get(query, params, headers = HEADERS).json()["items"]
     except KeyError:
+        aos = requests.get(query, params, headers = HEADERS).json()
+        print(aos.keys())
         raise KeyExpiredError()
     while len(aos) > 0:
         for ao in aos:
@@ -72,6 +75,8 @@ def get_artist_album_ids(artist_id: str) -> [str]:
         try:
             aos = requests.get(query, params, headers = HEADERS).json()["items"]
         except KeyError:
+            aos = requests.get(query, params, headers = HEADERS).json()
+            print(aos)
             raise KeyExpiredError()
     return albums
 
@@ -88,6 +93,8 @@ def get_tracks_from_albums_with_certain_artist(album_ids: [str], artist_id: str)
         try:
             aos = requests.get(query, params, headers = HEADERS).json()["albums"]
         except KeyError:
+            aos = requests.get(query, params, headers = HEADERS).json()
+            print(aos)
             raise KeyExpiredError()
         for album in aos:
             for track in album["tracks"]["items"]:
@@ -106,7 +113,50 @@ def get_tracks_from_albums_with_certain_artist(album_ids: [str], artist_id: str)
 def get_all_tracks_from_artist(artist_id: str) -> [Track]:
     return get_tracks_from_albums_with_certain_artist(get_artist_album_ids(artist_id), artist_id)
 
-if __name__ == "__main__":
-    tracks = get_all_tracks_from_artist(input())
-    for track in tracks:
+def search_for_artist() -> Artist:
+    query = "https://api.spotify.com/v1/search"
+    params = {"q": input("Enter an artist:\n"), "type": "artist", "limit": 1}
+    try:
+        search_results = requests.get(query, params, headers = HEADERS).json()["artists"]["items"]
+    except KeyError:
+            raise KeyExpiredError()
+    return Artist(search_results[0]["id"], search_results[0]["name"])
+
+def artists_from_tracklist(tracklist: [Track], to_be_skipped) -> dict:
+    artists = {}
+    for track in tracklist:
+        for a in track.artists:
+            if a not in to_be_skipped:
+                artists[a] = track
+    return artists
+
+def bacon_number(start: Artist, end: Artist, max_depth: int) -> BaconArtist:
+    if start == end: return BaconArtist(end, 0, [])
+    to_be_skipped = {start}
+    queue = Queue()
+    queue.put(BaconArtist(start, 0, []))
+    current = queue.get()
+    print("\nRunning . . .\n")
+    for n in range(max_depth):
+        while current.depth == n:
+            horizon = artists_from_tracklist(get_all_tracks_from_artist(current.artist.id), to_be_skipped)
+            for artist in horizon:
+                if artist == end:
+                    return BaconArtist(artist, n + 1, current.songlist + [horizon[artist]])
+                to_be_skipped.add(artist)
+                queue.put(BaconArtist(artist, n + 1, current.songlist + [horizon[artist]]))
+            current = queue.get()
+
+def print_baconartist(bacon_artist: BaconArtist) -> ([Track], int):
+    print("Bacon Number:", bacon_artist.depth)
+    print("\nTrack list:\n")
+    for track in bacon_artist.songlist:
         print(track.name)
+        print("\t", end = "")
+        for i in range(len(track.artists) - 1):
+            print(track.artists[i].name, end = "\n\t")
+        print(track.artists[-1].name)
+        print()
+
+if __name__ == "__main__":
+    print_baconartist(bacon_number(search_for_artist(), search_for_artist(), 10))
