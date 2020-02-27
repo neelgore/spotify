@@ -65,7 +65,8 @@ def get_artist_album_ids(artist_id: str) -> [str]:
         aos = requests.get(query, params, headers = HEADERS).json()["items"]
     except KeyError:
         aos = requests.get(query, params, headers = HEADERS).json()
-        print(aos.keys())
+        print(aos)
+        print(query)
         raise KeyExpiredError()
     while len(aos) > 0:
         for ao in aos:
@@ -77,6 +78,7 @@ def get_artist_album_ids(artist_id: str) -> [str]:
         except KeyError:
             aos = requests.get(query, params, headers = HEADERS).json()
             print(aos)
+            print(query)
             raise KeyExpiredError()
     return albums
 
