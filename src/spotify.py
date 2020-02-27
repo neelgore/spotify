@@ -1,6 +1,6 @@
 import requests
 import api_requests
-from classes import Track, Artist, Album, BaconArtist
+from classes import Track, Artist, BaconArtist
 from queue import Queue
 from time import sleep
 
@@ -16,6 +16,9 @@ def artists_from_tracklist(tracklist: [Track], to_be_skipped) -> dict:
                 artists[a] = track
     return artists
 
+def next_set_of_artists(current: Artist, to_be_skipped):
+    return artists_from_tracklist(get_all_tracks_from_artist(current.artist.id), to_be_skipped)
+
 def bacon_number(start: Artist, end: Artist, max_depth: int) -> BaconArtist:
     if start == end: return BaconArtist(end, 0, [])
     to_be_skipped = {start}
@@ -27,7 +30,7 @@ def bacon_number(start: Artist, end: Artist, max_depth: int) -> BaconArtist:
     for n in range(max_depth):
         print("depth: ", n + 1)
         while current.depth == n:
-            horizon = artists_from_tracklist(get_all_tracks_from_artist(current.artist.id), to_be_skipped)
+            horizon = next_set_of_artists(current, to_be_skipped)
             for artist in horizon:
                 if artist == end:
                     return BaconArtist(artist, n + 1, current.songlist + [horizon[artist]])
