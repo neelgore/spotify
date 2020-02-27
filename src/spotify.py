@@ -75,7 +75,7 @@ def get_artist_album_ids(artist_id: str) -> [str]:
             raise KeyExpiredError()
     return albums
 
-def get_tracks_from_albums_with_certain_artist(album_ids: [str], artist_id) -> [Track]:
+def get_tracks_from_albums_with_certain_artist(album_ids: [str], artist_id: str) -> [Track]:
     tracks = []
     query = "https://api.spotify.com/v1/albums"
     while len(album_ids) > 0:
@@ -103,7 +103,7 @@ def get_tracks_from_albums_with_certain_artist(album_ids: [str], artist_id) -> [
                     tracks.append(Track(songs_artists, track["explicit"], track["id"], track["name"]))
     return tracks
 
-def get_all_tracks_from_artist(artist_id: str):
+def get_all_tracks_from_artist(artist_id: str) -> [Track]:
     return get_tracks_from_albums_with_certain_artist(get_artist_album_ids(artist_id), artist_id)
 
 if __name__ == "__main__":
