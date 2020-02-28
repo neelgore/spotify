@@ -2,7 +2,7 @@ import requests
 import api_requests
 from classes import Track, Artist, BaconArtist
 from queue import Queue
-from time import sleep
+from collections import namedtuple
 
 
 def get_all_tracks_from_artist(artist_id: str) -> [Track]:
