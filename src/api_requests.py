@@ -1,6 +1,7 @@
 import requests
 from classes import Track, Artist
 from time import sleep
+import sys
 
 OAUTH_TOKEN = open("key.txt").readline()
 HEADERS = {"Content-Type": "application/json", "Authorization": "Bearer {}".format(OAUTH_TOKEN)}
@@ -58,26 +59,28 @@ def get_artist_album_ids(artist_id: str) -> [str]:
     page = 0
     params = {"limit": 50, "offset": 50*page}
     try:
-        aos = requests.get(query, params, headers = HEADERS).json()
-        if "error" in aos:
-            print(aos)
-        aos = aos["items"]
-    except KeyError:
-        sleep(1)
         aos = requests.get(query, params, headers = HEADERS).json()["items"]
+    except:
+        try:
+            sleep(1)
+            aos = requests.get(query, params, headers = HEADERS).json()["items"]
+        except:
+            print("Spotify did not respond as expected.")
+            sys.exit()
     while len(aos) > 0:
         for ao in aos:
             albums.append(ao["id"])
         page += 1
         params = {"limit": 50, "offset": 50*page}
         try:
-            aos = requests.get(query, params, headers = HEADERS).json()
-            if "error" in aos:
-                print(aos)
-            aos = aos["items"]
-        except KeyError:
-            sleep(1)
             aos = requests.get(query, params, headers = HEADERS).json()["items"]
+        except KeyError:
+            try:
+                sleep(1)
+                aos = requests.get(query, params, headers = HEADERS).json()["items"]
+            except:
+                print("Spotify did not respond as expected.")
+                sys.exit()
     return albums
 
 def get_tracks_from_albums_with_certain_artist(album_ids: [str], artist_id: str) -> [Track]:
@@ -91,13 +94,14 @@ def get_tracks_from_albums_with_certain_artist(album_ids: [str], artist_id: str)
         album_ids = album_ids[20:]
         params = {"ids": id_strings}
         try:
-            aos = requests.get(query, params, headers = HEADERS).json()
-            if "error" in aos:
-                print(aos)
-            aos = aos["albums"]
-        except KeyError:
-            sleep(1)
             aos = requests.get(query, params, headers = HEADERS).json()["albums"]
+        except KeyError:
+            try:
+                sleep(1)
+                aos = requests.get(query, params, headers = HEADERS).json()["albums"]
+            except:
+                print("Spotify did not respond as expected.")
+                sys.exit()
         for album in aos:
             for track in album["tracks"]["items"]:
                 artists = track["artists"]
@@ -111,11 +115,19 @@ def get_tracks_from_albums_with_certain_artist(album_ids: [str], artist_id: str)
                     tracks.append(Track(songs_artists, track["explicit"], track["id"], track["name"]))
     return tracks
 
-def search_for_artist() -> Artist:
+def search_for_artist(results: int) -> [Artist]:
     query = "https://api.spotify.com/v1/search"
-    params = {"q": input("Enter an artist:\n"), "type": "artist", "limit": 1}
+    params = {"q": input("Enter an artist:\n"), "type": "artist", "limit": results}
     try:
         search_results = requests.get(query, params, headers = HEADERS).json()["artists"]["items"]
     except KeyError:
-            raise KeyExpiredError()
-    return Artist(search_results[0]["id"], search_results[0]["name"])
+            try:
+                sleep(1)
+                search_results = requests.get(query, params, headers = HEADERS).json()["artists"]["items"]
+            except:
+                print("Spotify did not respond as expected.")
+                sys.exit()
+    artists = []
+    for artist in search_results:
+        artists.append(Artist(artist["id"], artist["name"]))
+    return artists
