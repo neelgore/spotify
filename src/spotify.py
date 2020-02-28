@@ -5,8 +5,8 @@ from queue import Queue
 from collections import namedtuple
 
 
-def get_all_tracks_from_artist(artist_id: str) -> [Track]:
-    return api_requests.get_tracks_from_albums_with_certain_artist(api_requests.get_artist_album_ids(artist_id), artist_id)
+def get_all_tracks_from_artist(artist: Artist) -> [Track]:
+    return api_requests.get_tracks_from_albums_with_certain_artist(api_requests.get_artist_album_ids(artist.id), artist.id)
 
 def artists_from_tracklist(tracklist: [Track], to_be_skipped, current: Artist) -> dict:
     artists = {}
@@ -17,8 +17,8 @@ def artists_from_tracklist(tracklist: [Track], to_be_skipped, current: Artist) -
             to_be_skipped.add(a)
     return artists
 
-def next_set_of_artists(current: Artist, to_be_skipped):
-    return artists_from_tracklist(get_all_tracks_from_artist(current.artist.id), to_be_skipped, current)
+def next_set_of_artists(current: BaconArtist, to_be_skipped):
+    return artists_from_tracklist(get_all_tracks_from_artist(current.artist), to_be_skipped, current)
 
 def bacon_number(start: Artist, end: Artist, max_depth: int) -> BaconArtist:
     if start == end: return BaconArtist(end, 0, [], [])
@@ -31,17 +31,21 @@ def bacon_number(start: Artist, end: Artist, max_depth: int) -> BaconArtist:
         print("current depth: ", n + 1)
         while current.depth == n:
             horizon = next_set_of_artists(current, to_be_skipped)
-            if len(horizon) == 0: return BaconArtist(end, -1, [], [BaconArtist(start, 0, [], [])])
             for artist in horizon:
                 if artist == end:
                     return BaconArtist(artist, n + 1, current.songlist + [horizon[artist][0]], current.artistlist + [horizon[artist][1]])
                 queue.put(BaconArtist(artist, n + 1, current.songlist + [horizon[artist][0]], current.artistlist + [horizon[artist][1]]))
+            if queue.empty(): return BaconArtist(end, -1, [], [BaconArtist(start, 0, [], [])])
             current = queue.get()
+    return BaconArtist(end, -2, max_depth, [BaconArtist(start, 0, [], [])])
 
 def print_baconartist(bacon_artist: BaconArtist) -> ([Track], int):
     print("\nResults from {} to {}:\n".format(bacon_artist.artistlist[0].artist.name, bacon_artist.artist.name))
     if bacon_artist.depth == -1:
         print("There is no connection between {} and {}.".format(bacon_artist.artistlist[0].artist.name, bacon_artist.artist.name))
+        return
+    if bacon_artist.depth == -2:
+        print("There is no connection between {} and {} with max depth {}.".format(bacon_artist.artistlist[0].artist.name, bacon_artist.artist.name, bacon_artist.songlist))
         return
     print("Bacon Number:", bacon_artist.depth)
     print("\nTrack list:\n")
@@ -75,4 +79,4 @@ def search_and_select_artist(results = 20) -> Artist:
     return artists[selection - 1]
 
 if __name__ == "__main__":
-    print_baconartist(bacon_number(search_and_select_artist(), search_and_select_artist(), 10))
+    print_baconartist(bacon_number(search_and_select_artist(), search_and_select_artist(), 2))
