@@ -31,6 +31,7 @@ def bacon_number(start: Artist, end: Artist, max_depth: int) -> BaconArtist:
         print("current depth: ", n + 1)
         while current.depth == n:
             horizon = next_set_of_artists(current, to_be_skipped)
+            if len(horizon) == 0: return BaconArtist(end, -1, [], [BaconArtist(start, 0, [], [])])
             for artist in horizon:
                 if artist == end:
                     return BaconArtist(artist, n + 1, current.songlist + [horizon[artist][0]], current.artistlist + [horizon[artist][1]])
@@ -39,6 +40,9 @@ def bacon_number(start: Artist, end: Artist, max_depth: int) -> BaconArtist:
 
 def print_baconartist(bacon_artist: BaconArtist) -> ([Track], int):
     print("\nResults from {} to {}:\n".format(bacon_artist.artistlist[0].artist.name, bacon_artist.artist.name))
+    if bacon_artist.depth == -1:
+        print("There is no connection between {} and {}.".format(bacon_artist.artistlist[0].artist.name, bacon_artist.artist.name))
+        return
     print("Bacon Number:", bacon_artist.depth)
     print("\nTrack list:\n")
     for i in range(len(bacon_artist.songlist) - 1):
