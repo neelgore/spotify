@@ -79,4 +79,4 @@ def search_and_select_artist(results = 20) -> Artist:
     return artists[selection - 1]
 
 if __name__ == "__main__":
-    print_baconartist(bacon_number(search_and_select_artist(), search_and_select_artist(), 2))
+    print_baconartist(bacon_number(search_and_select_artist(), search_and_select_artist(), int(input("How deep do you want to look? Enter an integer:\n"))))
