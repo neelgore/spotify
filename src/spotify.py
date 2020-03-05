@@ -78,5 +78,8 @@ def search_and_select_artist(results = 20) -> Artist:
     selection = int(input("Type a number to select an artist:\n"))
     return artists[selection - 1]
 
-if __name__ == "__main__":
+def run_bacon_artist() -> None:
     print_baconartist(bacon_number(search_and_select_artist(), search_and_select_artist(), int(input("How deep do you want to look? Enter an integer:\n"))))
+
+if __name__ == "__main__":
+    run_bacon_artist()
