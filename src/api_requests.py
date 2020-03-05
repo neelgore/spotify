@@ -131,3 +131,26 @@ def search_for_artist(results: int) -> [Artist]:
     for artist in search_results:
         artists.append(Artist(artist["id"], artist["name"]))
     return artists
+
+def search_for_track(results: int) -> [Track]:
+    query = "https://api.spotify.com/v1/search"
+    params = {"q": input("Enter a track:\n"), "type": "track", "limit": results}
+    tos = None
+    try:
+        tos = requests.get(query, params, headers = HEADERS).json()["tracks"]["items"]
+    except KeyError:
+            try:
+                sleep(1)
+                tos = requests.get(query, params, headers = HEADERS).json()["tracks"]["items"]
+            except:
+                print("Spotify did not respond as expected.")
+                sys.exit()
+    tracks = []
+    for to in tos:
+        artists = to["artists"]
+        songs_artists = []
+        for artist in artists:
+            artist_object = Artist(artist["id"], artist["name"])
+            songs_artists.append(artist_object)
+        tracks.append(Track(songs_artists, to["explicit"], to["id"], to["name"]))
+    return tracks
