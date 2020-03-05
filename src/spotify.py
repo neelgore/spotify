@@ -79,7 +79,31 @@ def search_and_select_artist(results = 20) -> Artist:
     return artists[selection - 1]
 
 def run_bacon_artist() -> None:
+    print("DISTANCE BETWEEN TWO ARTISTS\n")
     print_baconartist(bacon_number(search_and_select_artist(), search_and_select_artist(), int(input("How deep do you want to look? Enter an integer:\n"))))
+    print("\n")
+
+def run_artist_count_of_playlist() -> None:
+    print("ARTIST WHO APPEARS THE MOST ON A PLAYLIST\n")
+    playlist_id = input("Enter the playlist id (the numbers and letters at the end of the spotify URL):\n")
+    tracks = api_requests.get_playlist_tracks(playlist_id)
+    name = api_requests.get_playlist_name(playlist_id)
+    artists = {}
+    artist_names = []
+    for track in tracks:
+        for artist in track.artists:
+            if artist in artists:
+                artists[artist] += 1
+            else:
+                artists[artist] = 1
+                artist_names.append(artist.name)
+    sorted_artists = sorted(artists.items(), key=lambda x: x[1], reverse = True)
+    print()
+    print("Results for {}:\n".format(name))
+    for artist in sorted_artists:
+        print(artist[0].name + str(artist[1]).rjust(5 + len(max(artist_names, key = len)) - len(artist[0].name)))
+    print("\n")
 
 if __name__ == "__main__":
     run_bacon_artist()
+    run_artist_count_of_playlist()

@@ -36,6 +36,14 @@ def get_playlist_tracks(playlist_id: str) -> [Track]:
             raise KeyExpiredError()
     return tracks
 
+def get_playlist_name(playlist_id: str) -> str:
+    query = "https://api.spotify.com/v1/playlists/{}".format(playlist_id)
+    try:
+        playlist = requests.get(query, headers = HEADERS).json()
+    except KeyError:
+        raise KeyExpiredError()
+    return playlist["name"]
+
 def get_album_tracks(album_id: str) -> [Track]:
     tracks = []
     query = "https://api.spotify.com/v1/albums/{}/tracks".format(album_id)
