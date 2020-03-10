@@ -104,6 +104,16 @@ def run_artist_count_of_playlist() -> None:
         print(artist[0].name + str(artist[1]).rjust(5 + len(max(artist_names, key = len)) - len(artist[0].name)))
     print("\n")
 
+def run_artist_connections() -> None:
+    print("ARTISTS WHO HAVE COLLABORATED WITH GIVEN ARTIST\n")
+    start = search_and_select_artist()
+    start_set = set()
+    start_set.add(start)
+    connections = next_set_of_artists(BaconArtist(start, 0, [], []), start_set)
+    print()
+    print("Results: {}\n".format(len(connections)))
+    for artist in connections:
+        print(artist.name)
+
 if __name__ == "__main__":
     run_bacon_artist()
-    run_artist_count_of_playlist()
