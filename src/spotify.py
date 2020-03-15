@@ -39,6 +39,7 @@ def run_artist_connections() -> None:
     start_set = set()
     start_set.add(start)
     connections = spotify_tools.next_set_of_artists(BaconArtist(start, 0, [], []), start_set)
+    connections = sorted(connections.keys(), key = lambda x: x.name.lower())
     print()
     print("Results: {}\n".format(len(connections)))
     for artist in connections:
@@ -67,4 +68,4 @@ def run_playlist_duplicates() -> None:
     print("\n")
 
 if __name__ == "__main__":
-    run_playlist_duplicates()
+    run_artist_connections()

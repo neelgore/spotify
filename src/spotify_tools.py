@@ -15,7 +15,7 @@ def artists_from_tracklist(tracklist: [Track], to_be_skipped, current: Artist) -
             to_be_skipped.add(a)
     return artists
 
-def next_set_of_artists(current: BaconArtist, to_be_skipped):
+def next_set_of_artists(current: BaconArtist, to_be_skipped) -> dict:
     return artists_from_tracklist(get_all_tracks_from_artist(current.artist), to_be_skipped, current)
 
 def bacon_number(start: Artist, end: Artist, max_depth: int) -> BaconArtist:
